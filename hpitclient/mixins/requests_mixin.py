@@ -4,7 +4,7 @@ import logging
 from urllib.parse import urljoin
 
 from ..exceptions import AuthenticationError, ResourceNotFoundError, InternalServerError, ConnectionError
-from ..settings import settings
+from .. import settings
 
 requests_log = logging.getLogger("requests")
 
@@ -92,7 +92,7 @@ class RequestsMixin:
 
                 failure_count += 1
                 continue
-                
+
             except Exception:
                 raise ConnectionError("The remote address is bogus.")
         
