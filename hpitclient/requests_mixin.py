@@ -96,7 +96,10 @@ class RequestsMixin:
                 continue
 
             except Exception:
-                raise ConnectionError("The remote address is bogus.")
+                raise ConnectionError("Remote address is bogus.")
+
+        if not response:
+            raise ConnectionError("Connection was reset by a peer or the server rebooted.")
         
         if response.status_code == 200:
             return response
@@ -129,6 +132,12 @@ class RequestsMixin:
 
                 failure_count += 1
                 continue
+
+            except Exception:
+                raise ConnectionError("Remote address is bogus.")
+
+        if not response:
+            raise ConnectionError("Connection was reset by a peer or the server rebooted.")
 
         if response.status_code == 200:
             return response.json()
