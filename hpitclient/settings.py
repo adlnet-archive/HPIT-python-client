@@ -13,5 +13,3 @@ class HpitClientSettings:
             cls.instance = HpitClientSettings()
 
         return cls.instance
-
-settings = HpitClientSettings.settings()

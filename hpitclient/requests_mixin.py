@@ -4,7 +4,9 @@ import logging
 from urllib.parse import urljoin
 
 from .exceptions import AuthenticationError, ResourceNotFoundError, InternalServerError, ConnectionError
-from hpitclient import settings
+from .settings import HpitClientSettings
+
+settings = HpitClientSettings.settings()
 
 requests_log = logging.getLogger("requests")
 
