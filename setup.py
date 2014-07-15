@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 requirements = [
-    'requests>=2.2.1',
+    'requests (>=2.2.1)',
 ]
 
 classifiers=[
@@ -30,13 +30,13 @@ setup(name='hpitclient',
     version='0.1',
     description='Python Client Libraries for HPIT.',
     author='TutorGen, Inc.',
+    author_email='rchandler@tutorgen.com',
     maintainer='Raymond Chandler III',
     maintainer_email='rchandler@tutorgen.com',
     url='https://github.com/tutorgen/HPIT-python-client',
     download_url='https://github.com/tutorgen/HPIT-python-client',
     platforms=['linux', 'mac osx', 'windows 7', 'windows 8'],
     license='MIT LICENSE',
-    packages=['hpit', 'hpit.client'],
     classifiers=classifiers,
     requires=requirements,
 )
