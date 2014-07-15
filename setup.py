@@ -27,7 +27,7 @@ classifiers=[
     ]
 
 setup(name='hpitclient',
-    version='0.21',
+    version='0.22',
     description='Python Client Libraries for HPIT.',
     author='TutorGen, Inc.',
     author_email='rchandler@tutorgen.com',

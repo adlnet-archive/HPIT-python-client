@@ -99,7 +99,8 @@ class RequestsMixin:
                 elif response.status_code == 500:
                     raise InternalServerError("Internal server error")
 
-                break
+                return response
+
             except requests.exceptions.ConnectionError:
                 if failure_count == 3:
                     raise ConnectionError("Could not connect to server. Tried 3 times.")
@@ -136,7 +137,7 @@ class RequestsMixin:
                 elif response.status_code == 500:
                     raise InternalServerError("Internal server error")
 
-                break
+                return response
 
             except requests.exceptions.ConnectionError as e:
                 if failure_count == 3:
