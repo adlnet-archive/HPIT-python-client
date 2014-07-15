@@ -1,6 +1,6 @@
 from .requests_mixin import RequestsMixin
-from ..exceptions import ResponseDispatchError
-from ..exceptions import InvalidMessageNameException
+from .exceptions import ResponseDispatchError
+from .exceptions import InvalidMessageNameException
 
 class MessageSenderMixin(RequestsMixin):
     def __init__(self):

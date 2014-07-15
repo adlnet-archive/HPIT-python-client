@@ -1,6 +1,6 @@
 import time
 
-from .mixins import MessageSenderMixin
+from .message_sender_mixin import MessageSenderMixin
 from .exceptions import ResponseDispatchError
 
 class Tutor(MessageSenderMixin):

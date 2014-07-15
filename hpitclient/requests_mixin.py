@@ -3,8 +3,8 @@ import requests
 import logging
 from urllib.parse import urljoin
 
-from ..exceptions import AuthenticationError, ResourceNotFoundError, InternalServerError, ConnectionError
-from .. import settings
+from .exceptions import AuthenticationError, ResourceNotFoundError, InternalServerError, ConnectionError
+from hpitclient import settings
 
 requests_log = logging.getLogger("requests")
 
