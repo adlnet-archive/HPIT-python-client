@@ -86,29 +86,28 @@ class RequestsMixin:
                     response = self.session.post(url, data=json.dumps(data), headers=JSON_HTTP_HEADERS)
                 else:
                     response = self.session.post(url)
-                break
 
+                if not response:
+                    raise ConnectionError("Connection was reset by a peer or the server rebooted.")
+                
+                if response.status_code == 200:
+                    return response
+                elif response.status_code == 403:
+                    raise AuthenticationError("Request could not be authenticated")
+                elif response.status_code == 404:
+                    raise ResourceNotFoundError("Requested resource not found")
+                elif response.status_code == 500:
+                    raise InternalServerError("Internal server error")
+
+                break
             except requests.exceptions.ConnectionError:
                 if failure_count == 3:
                     raise ConnectionError("Could not connect to server. Tried 3 times.")
 
                 failure_count += 1
                 continue
-
             except Exception:
                 raise ConnectionError("Remote address is bogus.")
-
-        if not response:
-            raise ConnectionError("Connection was reset by a peer or the server rebooted.")
-        
-        if response.status_code == 200:
-            return response
-        elif response.status_code == 403:
-            raise AuthenticationError("Request could not be authenticated")
-        elif response.status_code == 404:
-            raise ResourceNotFoundError("Requested resource not found")
-        elif response.status_code == 500:
-            raise InternalServerError("Internal server error")
 
 
     def _get_data(self, url):
@@ -124,6 +123,19 @@ class RequestsMixin:
         while failure_count < 3:
             try:
                 response = self.session.get(url)
+
+                if not response:
+                    raise ConnectionError("Connection was reset by a peer or the server rebooted.")
+
+                if response.status_code == 200:
+                    return response.json()
+                elif response.status_code == 403:
+                    raise AuthenticationError("Request could not be authenticated")
+                elif response.status_code == 404:
+                    raise ResourceNotFoundError("Requested resource not found")
+                elif response.status_code == 500:
+                    raise InternalServerError("Internal server error")
+
                 break
 
             except requests.exceptions.ConnectionError as e:
@@ -135,18 +147,6 @@ class RequestsMixin:
 
             except Exception:
                 raise ConnectionError("Remote address is bogus.")
-
-        if not response:
-            raise ConnectionError("Connection was reset by a peer or the server rebooted.")
-
-        if response.status_code == 200:
-            return response.json()
-        elif response.status_code == 403:
-            raise AuthenticationError("Request could not be authenticated")
-        elif response.status_code == 404:
-            raise ResourceNotFoundError("Requested resource not found")
-        elif response.status_code == 500:
-            raise InternalServerError("Internal server error")
 
 
     def send_log_entry(self, text):
