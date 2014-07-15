@@ -1,8 +1,6 @@
 import time
-from urllib.parse import urljoin
 
 from .mixins import MessageSenderMixin
-from .settings import HPIT_URL_ROOT
 from .exceptions import PluginPollError, BadCallbackException
 
 class Plugin(MessageSenderMixin):
@@ -35,8 +33,7 @@ class Plugin(MessageSenderMixin):
         """
         if not hasattr(callback,"__call__"):
             raise BadCallbackException("The callback submitted is not callable.")
-        subscribe_url = urljoin(HPIT_URL_ROOT, '/plugin/subscribe')
-        self._post_data(subscribe_url, {'message_name' : "transaction"})
+        self._post_data('plugin/subscribe', {'message_name' : "transaction"})
         self.transaction_callback = callback
         
         
@@ -44,8 +41,7 @@ class Plugin(MessageSenderMixin):
         """
         Clear the callback for transactions and stop listening for them.
         """
-        unsubscribe_url = urljoin(HPIT_URL_ROOT, '/plugin/unsubscribe')
-        self._post_data(unsubscribe_url, {'message_name': "transaction"})
+        self._post_data('plugin/unsubscribe', {'message_name': "transaction"})
         self.transaction_callback = None
         
 
@@ -53,8 +49,7 @@ class Plugin(MessageSenderMixin):
         """
         Polls the HPIT server for a list of message names we currently subscribing to.
         """
-        list_url = urljoin(HPIT_URL_ROOT, '/plugin/subscription/list')
-        subscriptions = self._get_data(list_url)['subscriptions']
+        subscriptions = self._get_data('plugin/subscription/list')['subscriptions']
 
         for sub in subscriptions:
             if sub not in self.callbacks:
@@ -69,9 +64,7 @@ class Plugin(MessageSenderMixin):
         the key is the message's name and the value is the callback function.
         """
         for message_name, callback in messages.items():
-            subscribe_url = urljoin(HPIT_URL_ROOT, '/plugin/subscribe')
-
-            self._post_data(subscribe_url, {'message_name' : message_name})
+            self._post_data('plugin/subscribe', {'message_name' : message_name})
             self.callbacks[message_name] = callback
             
 
@@ -81,8 +74,7 @@ class Plugin(MessageSenderMixin):
         """
         for message_name in message_names:
             if message_name in self.callbacks:
-                unsubscribe_url = urljoin(HPIT_URL_ROOT, '/plugin/unsubscribe')
-                self._post_data(unsubscribe_url, {'message_name': message_name})
+                self._post_data('plugin/unsubscribe', {'message_name': message_name})
                 del self.callbacks[message_name]
 
 
@@ -91,18 +83,14 @@ class Plugin(MessageSenderMixin):
         Get a list of new messages from the server for messages we are listening 
         to.
         """
-        list_messages_url = urljoin(HPIT_URL_ROOT, '/plugin/message/list')
-
-        return self._get_data(list_messages_url)['messages']
+        return self._get_data('plugin/message/list')['messages']
 
     def _handle_transactions(self):
         """
         Get a list of datashop transactions from the server. 
         """
 
-        list_transaction_url = urljoin(HPIT_URL_ROOT, '/plugin/transaction/list')
-
-        transaction_data = self._get_data(list_transaction_url)['transactions']
+        transaction_data = self._get_data('plugin/transaction/list')['transactions']
 
         for item in transaction_data:
             if self.transaction_callback:
@@ -218,9 +206,7 @@ class Plugin(MessageSenderMixin):
         Responses are handled differently than normal messages as they are destined
         for a only the original sender of the message_id to recieve the response.
         """
-        response_url = urljoin(HPIT_URL_ROOT, 'response')
-
-        self._post_data(response_url, {
+        self._post_data('response', {
             'message_id': message_id,
             'payload': payload
         })

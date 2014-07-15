@@ -4,15 +4,15 @@ import logging
 from urllib.parse import urljoin
 
 from ..exceptions import AuthenticationError, ResourceNotFoundError, InternalServerError, ConnectionError
-from ..settings import HPIT_URL_ROOT, REQUESTS_LOG_LEVEL
+from ..settings import settings
 
 requests_log = logging.getLogger("requests")
 
-if REQUESTS_LOG_LEVEL == 'warning':
+if settings.REQUESTS_LOG_LEVEL == 'warning':
     requests_log.setLevel(logging.WARNING)
-elif REQUESTS_LOG_LEVEL == 'debug':
+elif settings.REQUESTS_LOG_LEVEL == 'debug':
     requests_log.setLevel(logging.DEBUG)
-elif REQUESTS_LOG_LEVEL == 'info':
+elif settings.REQUESTS_LOG_LEVEL == 'info':
     requests_log.setLevel(logging.INFO)
 
 JSON_HTTP_HEADERS = {'content-type': 'application/json'}
@@ -36,8 +36,7 @@ class RequestsMixin:
         """
         self._try_hook('pre_connect')
 
-        connection = self._post_data(
-            urljoin(HPIT_URL_ROOT, '/connect'), {
+        connection = self._post_data('connect', {
                 'entity_id': self.entity_id, 
                 'api_key': self.api_key
             }
@@ -57,8 +56,7 @@ class RequestsMixin:
         """
         self._try_hook('pre_disconnect')
         
-        self._post_data(
-            urljoin(HPIT_URL_ROOT, '/disconnect'), {
+        self._post_data('disconnect', {
                 'entity_id': self.entity_id,
                 'api_key': self.api_key
             }
@@ -77,6 +75,7 @@ class RequestsMixin:
 
         Returns: requests.Response : class - The response from HPIT. Normally a 200:OK.
         """
+        url = urljoin(settings.HPIT_URL_ROOT, url)
 
         failure_count = 0
         while failure_count < 3:
@@ -87,12 +86,13 @@ class RequestsMixin:
                     response = self.session.post(url)
                 break
 
-            except requests.exceptions.ConnectionError as e:
+            except requests.exceptions.ConnectionError:
                 if failure_count == 3:
                     raise ConnectionError("Could not connect to server. Tried 3 times.")
 
                 failure_count += 1
                 continue
+                
             except Exception:
                 raise ConnectionError("The remote address is bogus.")
         
@@ -113,6 +113,8 @@ class RequestsMixin:
 
         Returns: dict() - A Python dictionary representing the JSON recieved in the request.
         """
+        url = urljoin(settings.HPIT_URL_ROOT, url)
+
         failure_count = 0
         while failure_count < 3:
             try:
@@ -140,10 +142,7 @@ class RequestsMixin:
         """
         Send a log entry to the HPIT server.
         """
-        self._post_data(
-            urljoin(HPIT_URL_ROOT, "/log"), 
-            data={'log_entry':text}
-        )
+        self._post_data("log", data={'log_entry':text})
 
 
     def _add_hooks(self, *hooks):

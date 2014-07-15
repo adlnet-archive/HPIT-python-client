@@ -1,9 +1,6 @@
-from urllib.parse import urljoin
-
 from .requests_mixin import RequestsMixin
 from ..exceptions import ResponseDispatchError
 from ..exceptions import InvalidMessageNameException
-from ..settings import HPIT_URL_ROOT
 
 class MessageSenderMixin(RequestsMixin):
     def __init__(self):
@@ -40,9 +37,7 @@ class MessageSenderMixin(RequestsMixin):
         if message_name == "transaction":
             raise InvalidMessageNameException("Cannot use message_name 'transaction'.  Use send_transaction() method for datashop transactions.")
             
-        message_url = urljoin(HPIT_URL_ROOT, 'message')
-
-        response = self._post_data(message_url, {
+        response = self._post_data('message', {
             'name': message_name,
             'payload': payload
         }).json()
@@ -59,9 +54,7 @@ class MessageSenderMixin(RequestsMixin):
         See send() method for more details.
         """
         
-        message_url = urljoin(HPIT_URL_ROOT, 'transaction')
-
-        response = self._post_data(message_url, {
+        response = self._post_data('transaction', {
             'payload': payload
         }).json()
 
@@ -85,12 +78,10 @@ class MessageSenderMixin(RequestsMixin):
         Returns: dict - The list of responses from the server for earlier messages 
         submitted by this message sender to HPIT.
         """
-        response_list_url = urljoin(HPIT_URL_ROOT, 'response/list')
-
         if not self._try_hook('pre_poll_responses'):
             return False
 
-        responses = self._get_data(response_list_url)['responses']
+        responses = self._get_data('response/list')['responses']
 
         if not self._try_hook('post_poll_responses'):
             return False

@@ -1,8 +1,6 @@
 import time
-from urllib.parse import urljoin
 
 from .mixins import MessageSenderMixin
-from .settings import HPIT_URL_ROOT
 from .exceptions import ResponseDispatchError
 
 class Tutor(MessageSenderMixin):
