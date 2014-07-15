@@ -37,6 +37,7 @@ setup(name='hpitclient',
     download_url='https://github.com/tutorgen/HPIT-python-client',
     platforms=['linux', 'mac osx', 'windows 7', 'windows 8'],
     license='MIT LICENSE',
+    packages=['hpitclient'],
     classifiers=classifiers,
     requires=requirements,
 )
