@@ -3,10 +3,12 @@ import httpretty
 import json
 import pytest
 
-from client.mixins import MessageSenderMixin
-from client.exceptions import InvalidMessageNameException
-from client.exceptions import ResponseDispatchError
-from client.settings import HPIT_URL_ROOT
+from hpitclient.message_sender_mixin import MessageSenderMixin
+from hpitclient.exceptions import InvalidMessageNameException
+from hpitclient.exceptions import ResponseDispatchError
+from hpitclient.settings import HpitClientSettings
+
+HPIT_URL_ROOT = HpitClientSettings.settings().HPIT_URL_ROOT
 
 def send_callback():
     print("test callback")
