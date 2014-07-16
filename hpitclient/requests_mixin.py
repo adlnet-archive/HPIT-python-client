@@ -87,7 +87,7 @@ class RequestsMixin:
                 else:
                     response = self.session.post(url)
 
-                if not response:
+                if response is None:
                     raise ConnectionError("Connection was reset by a peer or the server rebooted.")
                 
                 if response.status_code == 200:
@@ -125,7 +125,7 @@ class RequestsMixin:
             try:
                 response = self.session.get(url)
 
-                if not response:
+                if response is None:
                     raise ConnectionError("Connection was reset by a peer or the server rebooted.")
 
                 if response.status_code == 200:
