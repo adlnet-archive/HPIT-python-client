@@ -107,8 +107,6 @@ class RequestsMixin:
 
                 failure_count += 1
                 continue
-            except Exception:
-                raise ConnectionError("Remote address is bogus.")
 
 
     def _get_data(self, url):
@@ -145,9 +143,6 @@ class RequestsMixin:
 
                 failure_count += 1
                 continue
-
-            except Exception:
-                raise ConnectionError("Remote address is bogus.")
 
 
     def send_log_entry(self, text):
