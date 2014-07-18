@@ -1,6 +1,6 @@
 class HpitClientSettings:
     instance = None
-    HPIT_URL_ROOT = 'http://23.239.14.159:80'
+    HPIT_URL_ROOT = 'https://www.hpit-project.org'
     REQUESTS_LOG_LEVEL = 'debug'
 
     def __new__(cls, *args, **kwargs):
