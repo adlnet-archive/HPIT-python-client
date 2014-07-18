@@ -142,6 +142,7 @@ class Plugin(MessageSenderMixin):
         Start the plugin. Connect to the HPIT server. Then being polling and dispatching
         message callbacks based on messages we subscribe to.
         """
+        self.run_loop = True;
         self.connect()
         self.list_subscriptions()
 

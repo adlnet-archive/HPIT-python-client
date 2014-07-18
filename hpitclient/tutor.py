@@ -23,6 +23,7 @@ class Tutor(MessageSenderMixin):
         """
         Starts the tutor in event-driven mode.
         """
+        self.run_loop = True;
         self.connect()
         
         try:
