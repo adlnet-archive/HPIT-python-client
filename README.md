@@ -203,60 +203,60 @@ if __name__ == '__main__':
 
 ### Plugin Hooks
 
-    There are several hooks throughout the main event loop, where you can handle some special cases. The only hook
-    that MUST be defined in a plugin is the `post_connect` hook. It is where you should define the messages and handlers
-    that the plugin to listen and possibly respond to. 
+There are several hooks throughout the main event loop, where you can handle some special cases. The only hook
+that MUST be defined in a plugin is the `post_connect` hook. It is where you should define the messages and handlers
+that the plugin to listen and possibly respond to. 
 
-    To stop the plugin from running you can either send a SIGTERM or SIGKILL signal to it eg. (`sudo kill -9 plugin_process_id`), OR
-    you can press CTRL+C, OR you can return False from a hook. A signal, control+c, and returning False from a hook are considered
-    graceful by the library and not only will the plugin terminate, it will send a disconnect message to the server, which will
-    destory the authentication session against the server, and the HPIT server will continue storing messages for you to retrieve
-    later.
+To stop the plugin from running you can either send a SIGTERM or SIGKILL signal to it eg. (`sudo kill -9 plugin_process_id`), OR
+you can press CTRL+C, OR you can return False from a hook. A signal, control+c, and returning False from a hook are considered
+graceful by the library and not only will the plugin terminate, it will send a disconnect message to the server, which will
+destory the authentication session against the server, and the HPIT server will continue storing messages for you to retrieve
+later.
 
-    Disconnecting from the HPIT server will not cause HPIT to forget about you, it will continue storing messages for you, which
-    you can recieve the next time you run your plugin. Isn't that nice. :)
+Disconnecting from the HPIT server will not cause HPIT to forget about you, it will continue storing messages for you, which
+you can recieve the next time you run your plugin. Isn't that nice. :)
 
-    If you want HPIT to stop storing and routing messages to you, you can call the handy, dandy 'self.unsubscribe' method after
-    connecting to HPIT. A good place to do this is in the `pre_disconnect` hook.
+If you want HPIT to stop storing and routing messages to you, you can call the handy, dandy 'self.unsubscribe' method after
+connecting to HPIT. A good place to do this is in the `pre_disconnect` hook.
 
-    ```python
-    from hpitclient import Plugin
+```python
+from hpitclient import Plugin
 
-    class MyPlugin(Plugin):
+class MyPlugin(Plugin):
 
-        def __init__(self):
-            pass
+    def __init__(self):
+        pass
 
-        def post_connect(self):
-            super().post_connect()
+    def post_connect(self):
+        super().post_connect()
 
-            #Subscribe to a message called 'echo'
-            self.subscribe(echo=self.my_echo_callback)
+        #Subscribe to a message called 'echo'
+        self.subscribe(echo=self.my_echo_callback)
 
-        def pre_disconnect(self):
-            #Unsubscribe to the 'echo' message
-            self.unsubscribe('echo')
-    ```
+    def pre_disconnect(self):
+        #Unsubscribe to the 'echo' message
+        self.unsubscribe('echo')
+```
 
-    Here are some other places you can hook into the event loop. Returning False from any of them, will cause the event loop to
-    terminate.
+Here are some other places you can hook into the event loop. Returning False from any of them, will cause the event loop to
+terminate.
 
-    Hook Name                   | Called When:
-    --------------------------- | --------------------------------------------------------------------------
-    pre_connect                 | Before the plugin connects and authenticates with the server.
-    post_connect                | After the plugin connects and authenticates with the server.
-    pre_disconnect              | Before the plugin disconnects from the server.
-    post_disconnect             | After the plugin disconnects from the server. (Right before exit)
-    pre_poll_messages           | Before the plugin polls the server for new messages.
-    post_poll_messages          | After the plugin polls the server for new messages but before dispatch.
-    pre_dispatch_messages       | Before the messages are dispatched to their callbacks.
-    post_dispatch_messages      | After the messages are dispatched to their callbacks.
-    pre_handle_transactions     | Before the plugin polls the server for new PSLC Datashop transactions.
-    post_handle_transcations    | After the plugin polls the server for new PSLC Datashop transactions.
-    pre_poll_responses          | Before the plugin polls the server for new responses to it's messages.
-    post_poll_responses         | After the plugin polls the server for new responses but before dispatch.
-    pre_dispatch_responses      | Before the plugin dispatches it's responses to response callbacks.
-    post_dispatch_responses     | After the plugin dispatches it's responses to response callbacks.
+Hook Name                   | Called When:
+--------------------------- | --------------------------------------------------------------------------
+pre_connect                 | Before the plugin connects and authenticates with the server.
+post_connect                | After the plugin connects and authenticates with the server.
+pre_disconnect              | Before the plugin disconnects from the server.
+post_disconnect             | After the plugin disconnects from the server. (Right before exit)
+pre_poll_messages           | Before the plugin polls the server for new messages.
+post_poll_messages          | After the plugin polls the server for new messages but before dispatch.
+pre_dispatch_messages       | Before the messages are dispatched to their callbacks.
+post_dispatch_messages      | After the messages are dispatched to their callbacks.
+pre_handle_transactions     | Before the plugin polls the server for new PSLC Datashop transactions.
+post_handle_transcations    | After the plugin polls the server for new PSLC Datashop transactions.
+pre_poll_responses          | Before the plugin polls the server for new responses to it's messages.
+post_poll_responses         | After the plugin polls the server for new responses but before dispatch.
+pre_dispatch_responses      | Before the plugin dispatches it's responses to response callbacks.
+post_dispatch_responses     | After the plugin dispatches it's responses to response callbacks.
 
 
 ## Creating a Tutor
