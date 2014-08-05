@@ -7,7 +7,7 @@ is being developed between a partnership with Carnegie Learning and TutorGen, In
 recent research available. The goal of HPIT is to provide a scalable platform for the future development 
 of cognitive and intelligent tutoring systems. HPIT by default consists of several different plugins
 which users can store, track and query for information. As of today we support Bayesian Knowledge Tracing, 
-Models Tracing, Adaptive Hint Generation, and data storage and retrieval. HPIT is in active development 
+Model Tracing, Adaptive Hint Generation, and data storage and retrieval. HPIT is in active development 
 and should be considered unstable for everyday use.
 
 ## Installing the client libraries
@@ -259,4 +259,116 @@ pre_dispatch_responses      | Before the plugin dispatches it's responses to res
 post_dispatch_responses     | After the plugin dispatches it's responses to response callbacks.
 
 
-## Creating a Tutor
+## Tutors
+
+### Tutorial: Creating a Tutor
+
+To create a new tutor, first go https://www.hpit-project.org and log in. Then
+click on "My Tutors" and add a new tutor. Give it a brief name and a description. Click
+Submit. The next page will generate for you two items you'll need to us to connect to the
+centralized HPIT router. An Entity ID and an API Key. We do not store API Keys on the server
+so if you lose it you'll need to generate a new one. Copy the Entity ID and API Key.
+
+To create a new tutor you'll need to derive from the Tutor class.
+
+```python
+from hpitclient import Tutor
+
+class MyTutor(Tutor):
+
+    def __init__(self):
+        entity_id = 'YOUR_PLUGIN_ENTITY_ID' #eg. b417e82d-4153-4f87-8a11-8bb5c6bfaa00
+        api_key = 'YOUR_PLUGIN_API_KEY' #eg. ae29bd1b81a6064061eca875a8ff0a8d
+
+        super().__init__(entity_id, api_key, self.main_callback)
+
+    def main_callback(self):
+        print("Main Callback Loop")
+        response = self.send('echo', {'test': 1234})
+```
+
+Tutors differ from plugins in one major way, in their main event loop they call a callback function
+which will be called during each iteration of the main event loop. This callback is specified in a 
+parameter in the init function. After calling the main callback function, the main event loop then
+polls HPIT for responses from plugins which you have sent messages to earlier.
+
+To send a message to HPIT and have that message routed to a specific plugin you can call the `self.send`
+method as we do above. Messages sent this way consist of an event name (in this case 'echo') and a dictionary
+of data. Optionally you can specify a response callback as we do below. All messages sent through HPIT are 
+multicast and every plugin which 'subscribes' to those messages will recieve them, including the echo plugin
+you created and registered with HPIT in the last tutorial.
+
+```python
+class MyTutor(Tutor):
+    ...
+
+    def main_callback(self):
+        response = self.send('echo', {'test': 1234}, self.response_callback)
+
+    def response_callback(self, response):
+        print(str(response))
+```
+
+When you send a message to HPIT you can specify a response callback to the send method. After the message is
+recieved and processed by a plugin, it may optionally send a response back. If it does the response will travel
+back through HPIT, where when polled by this library, will route that response to the callback you specified. You can
+then process the response however you would like in your Tutor. Here, we are just echoing the response back to the
+console. Responses you recive will be a dictionary consisting of the following key-value pairs.
+
+Key (. denotes sub-dictionary)  | Value
+------------------------------- | --------------------------------------------------------------------------
+message_id                      | The ID generated to track the message.
+message.sender_entity_id        | Your Entity ID.
+message.receiver_entity_id      | The Plugin's Entity ID that is responding to your message.
+message.time_created            | The time HPIT first recieved your message.
+message.time_received           | The time HPIT queued the message for the plugin to consume.
+message.time_responded          | The time HPIT recieved a response from the plugin.
+message.time_response_received  | The time HPIT sent the response back to your tutor.
+message.payload                 | What you originally sent to HPIT.
+message.message_name            | What you named the message.
+response                        | A dictionary of values the Plugin responded to the message with.
+
+Since multiply plugins may respond to the same message that you sent out, you may wish to check the contents
+of the response payload, as well as the message.reciever_entity_id to help filter the responses you actually
+want to handle. You can specify different callbacks for the same message, as well as a "global" callback for 
+one message. For example both:
+
+```python
+class mytutor(tutor):
+    ...
+
+    def main_callback(self):
+        response = self.send('echo', {'test': 1234}, self.response_callback)
+        response = self.send('echo_two', {'test': 1234}, self.response_callback)
+
+    def response_callback(self, response):
+        print(str(response))
+```
+
+AND
+
+```python
+class mytutor(tutor):
+    ...
+
+    def main_callback(self):
+        response = self.send('echo', {'test': 1234}, self.response_callback)
+        response = self.send('echo', {'test': 1234}, self.response_callback_two)
+
+    def response_callback(self, response):
+        print(str(response))
+
+    def response_callback_two(self, response):
+        logger.log(str(response))
+```
+
+are valid ways to handle responses from plugins. 
+
+That's really all their is to writing a tutor.
+
+## Active Plugins in Production
+
+Currently, there are only 2 plugins active on HPIT's production servers which you can query for information.
+These are the knowledge tracing plugin and the hint factory plugin. The knowledge tracing plugin is responsible
+for handling bayesian knowledge tracing, and the hint factory handle domain model generation and hint generation.
+Documentation on these two plugins are available from https://www.hpit-project.org/docs
