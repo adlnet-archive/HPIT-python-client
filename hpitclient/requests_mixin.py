@@ -1,4 +1,5 @@
 import json
+import time
 import requests
 import logging
 from datetime import datetime
@@ -159,7 +160,7 @@ class RequestsMixin:
 
     def _attempt_reconnection(self, callback):
         self.connected = False
-        print("Looks like the server went down. Waiting...")
+        print("Looks like the server went down. Waiting 5 minutes...")
 
         failure_count = 0
         while failure_count < 3:
