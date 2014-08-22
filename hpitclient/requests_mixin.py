@@ -1,6 +1,7 @@
 import json
 import requests
 import logging
+from datetime import datetime
 from urllib.parse import urljoin
 
 from .exceptions import AuthenticationError, ResourceNotFoundError, InternalServerError, ConnectionError
@@ -29,7 +30,7 @@ class RequestsMixin:
         self._add_hooks('pre_connect', 'post_connect', 'pre_disconnect', 'post_disconnect')
 
 
-    def connect(self):
+    def connect(self, retry=True):
         """
         Register a connection with the HPIT Server.
 
@@ -37,11 +38,10 @@ class RequestsMixin:
         the system. This is mostly used to track plugin use with the site.
         """
         self._try_hook('pre_connect')
-
-        connection = self._post_data('connect', {
+        self._post_data('connect', {
                 'entity_id': self.entity_id, 
                 'api_key': self.api_key
-            }
+            }, retry=retry
         )
 
         self.connected = True
@@ -50,7 +50,7 @@ class RequestsMixin:
         return self.connected
 
 
-    def disconnect(self):
+    def disconnect(self, retry=True):
         """
         Tells the HPIT Server that you are not currently going to poll
         the server for messages or responses. This also destroys the current session
@@ -61,7 +61,7 @@ class RequestsMixin:
         self._post_data('disconnect', {
                 'entity_id': self.entity_id,
                 'api_key': self.api_key
-            }
+            }, retry=retry
         )
 
         self.connected = False
@@ -70,7 +70,7 @@ class RequestsMixin:
         return self.connected
 
 
-    def _post_data(self, url, data=None):
+    def _post_data(self, url, data=None, retry=True):
         """
         Sends arbitrary data to the HPIT server. This is mainly a thin
         wrapper ontop of requests that ensures we are using sessions properly.
@@ -108,8 +108,14 @@ class RequestsMixin:
                 failure_count += 1
                 continue
 
+        #It looks like the server went down. Wait 5 minutes and try again
+        if retry:
+            return self._attempt_reconnection(lambda: self._post_data(url, data))
 
-    def _get_data(self, url):
+        raise ConnectionError("Connection was reset by a peer or the server stopped responding.")
+
+
+    def _get_data(self, url, retry=True):
         """
         Gets arbitrary data from the HPIT server. This is mainly a thin
         wrapper on top of requests that ensures we are using session properly.
@@ -143,6 +149,41 @@ class RequestsMixin:
 
                 failure_count += 1
                 continue
+
+        #It looks like the server went down. Wait 5 minutes and try again
+        if retry:
+            return self._attempt_reconnection(lambda: self._get_data(url))
+
+        raise ConnectionError("Connection was reset by a peer or the server stopped responding.")
+
+
+    def _attempt_reconnection(self, callback):
+        self.connected = False
+        print("Looks like the server went down. Waiting...")
+
+        failure_count = 0
+        while failure_count < 3:
+            time.sleep(300)
+
+            #Just hit the front page
+            response = self.session.get(HPIT_URL_ROOT)
+
+            if response and response.status_code == 200:
+                print("Server looks like it finished rebooting... attempting reconnect.")
+
+                try:
+                    self.connect(retry=False)
+                except: #Still having problems
+                    failure_count += 1
+                    continue
+
+                print("Successfully reconnected... continuing as normal")
+                return callback()
+            else:
+                failure_count += 1
+
+
+        raise ConnectionError("Could not reconnect to the server. Shutting down.")
 
 
     def send_log_entry(self, text):
