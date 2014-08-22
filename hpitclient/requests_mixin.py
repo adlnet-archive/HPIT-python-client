@@ -167,7 +167,7 @@ class RequestsMixin:
             time.sleep(300)
 
             #Just hit the front page
-            response = self.session.get(HPIT_URL_ROOT)
+            response = self.session.get(settings.HPIT_URL_ROOT)
 
             if response and response.status_code == 200:
                 print("Server looks like it finished rebooting... attempting reconnect.")
