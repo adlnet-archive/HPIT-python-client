@@ -32,6 +32,24 @@ You're all set to start using the libraries.
 
 Go to https://www.hpit-project.org/user/register and create a new account.
 
+## Settings
+
+There are various settings which change the behavior of the client side libraries.
+
+| name               | default                        | description                                |
+|--------------------|--------------------------------|--------------------------------------------|
+| HPIT_URL_ROOT      | 'https://www.hpit-project.org' | The URL of the HPIT server.                |
+| REQUESTS_LOG_LEVEL | 'debug'                        | The logging level of the requests library. |
+
+To override the clientside settings in your app do the following. You will need to override the HPIT
+URL if you are doing any local testing.
+
+```python
+    from hpitclient.settings import HpitClientSettings
+    settings = HpitClientSettings.settings()
+    settings.HPIT_URL_ROOT = 'http://127.0.0.1:8000'
+```
+
 ## Plugins
 
 ### Tutorial: Creating a Plugin
