@@ -117,12 +117,13 @@ class MessageSenderMixin(RequestsMixin):
             except KeyError:
                 raise ResponseDispatchError('Invalid response from HPIT. No response payload supplied.')
 
-            try:
-                self.response_callbacks[message_id](response_payload)
-            except KeyError:
+            if message_id not in self.response_callbacks:
                 raise ResponseDispatchError('No callback registered for message id: ' + message_id)
-            except TypeError:
+
+            if not callable(self.response_callbacks[message_id]):
                 raise ResponseDispatchError("Callback registered for transcation id: " + message_id + " is not a callable.")
+                
+            self.response_callbacks[message_id](response_payload)
 
         if not self._try_hook('post_dispatch_responses'):
             return False
