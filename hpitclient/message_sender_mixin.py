@@ -111,17 +111,21 @@ class MessageSenderMixin(RequestsMixin):
                 message_id = res['message']['message_id']
             except KeyError:
                 self.send_log_entry('Invalid response from HPIT. No message id supplied in response.')
+                continue
 
             try:
                 response_payload = res['response']
             except KeyError:
                 self.send_log_entry('Invalid response from HPIT. No response payload supplied.')
+                continue
 
             if message_id not in self.response_callbacks:
                 self.send_log_entry('No callback registered for message id: ' + message_id)
+                continue
 
             if not callable(self.response_callbacks[message_id]):
                 self.send_log_entry("Callback registered for transcation id: " + message_id + " is not a callable.")
+                continue
                 
             self.response_callbacks[message_id](response_payload)
 
