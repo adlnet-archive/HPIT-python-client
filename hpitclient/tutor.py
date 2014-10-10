@@ -46,11 +46,8 @@ class Tutor(MessageSenderMixin):
                 if not self._try_hook('post_poll_responses'):
                     break;
 
-                try:
-                    if not self._dispatch_responses(responses):
-                        break;
-                except ResponseDispatchError as e:
-                    print(str(e))
+                if not self._dispatch_responses(responses):
+                    break;
 
         except KeyboardInterrupt:
             pass

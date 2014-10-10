@@ -193,6 +193,11 @@ class RequestsMixin:
         """
         self._post_data("log", data={'log_entry':text})
 
+        #Log to file if a logger variable is set on this class instance
+        logger = getattr(self, 'logger', None)
+        if logger:
+            logger.debug(text)
+
 
     def _add_hooks(self, *hooks):
         """
