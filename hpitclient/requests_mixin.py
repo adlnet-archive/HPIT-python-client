@@ -6,18 +6,6 @@ from datetime import datetime
 from urllib.parse import urljoin
 
 from .exceptions import AuthenticationError, ResourceNotFoundError, InternalServerError, ConnectionError
-from .settings import HpitClientSettings
-
-settings = HpitClientSettings.settings()
-
-requests_log = logging.getLogger("requests")
-
-if settings.REQUESTS_LOG_LEVEL == 'warning':
-    requests_log.setLevel(logging.WARNING)
-elif settings.REQUESTS_LOG_LEVEL == 'debug':
-    requests_log.setLevel(logging.DEBUG)
-elif settings.REQUESTS_LOG_LEVEL == 'info':
-    requests_log.setLevel(logging.INFO)
 
 JSON_HTTP_HEADERS = {'content-type': 'application/json'}
 
@@ -27,8 +15,28 @@ class RequestsMixin:
         self.api_key = ""
         self.session = requests.Session()
         self.connected = False
-        
+
+        self.set_hpit_root_url('https://www.hpit-project.org')
+        self.set_requests_log_level('debug')
+
         self._add_hooks('pre_connect', 'post_connect', 'pre_disconnect', 'post_disconnect')
+
+
+    def set_hpit_root_url(root_url):
+        self._hpit_root_url = root_url
+
+
+    def set_requests_log_level(log_level):
+        requests_log = logging.getLogger("requests")
+
+        if log_level == 'warning':
+            requests_log.setLevel(logging.WARNING)
+        elif log_level == 'debug':
+            requests_log.setLevel(logging.DEBUG)
+        elif log_level == 'info':
+            requests_log.setLevel(logging.INFO)
+
+        self._requests_log_level = log_level
 
 
     def connect(self, retry=True):
