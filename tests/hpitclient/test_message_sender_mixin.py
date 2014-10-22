@@ -6,9 +6,6 @@ import pytest
 from hpitclient.message_sender_mixin import MessageSenderMixin
 from hpitclient.exceptions import InvalidMessageNameException
 from hpitclient.exceptions import ResponseDispatchError
-from hpitclient.settings import HpitClientSettings
-
-HPIT_URL_ROOT = HpitClientSettings.settings().HPIT_URL_ROOT
 
 def send_callback():
     print("test callback")
@@ -24,7 +21,7 @@ def test_send():
     
     test_payload = {"item":"shoe"}
     
-    httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/message",
+    httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/message",
                             body='{"message_id":"4"}',
                             )
     
@@ -47,7 +44,7 @@ def test_send_transaction():
     
     test_payload = {"item":"shoe"}
     
-    httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/message",
+    httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/message",
                             body='{"message_id":"4"}',
                             )
     
@@ -67,7 +64,7 @@ def test_poll_responses():
         -Ensure a collection of responses returned on success
     """
     
-    httpretty.register_uri(httpretty.GET,HPIT_URL_ROOT+"/response/list",
+    httpretty.register_uri(httpretty.GET,"https://www.hpit-project.org/response/list",
                             body='{"responses":"4"}',
                             )
     

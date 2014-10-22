@@ -2,9 +2,6 @@ import sure
 import unittest
 
 from hpitclient import Tutor
-from hpitclient.settings import HpitClientSettings
-
-HPIT_URL_ROOT = HpitClientSettings.settings().HPIT_URL_ROOT
 
 class TestTutor(unittest.TestCase):
 

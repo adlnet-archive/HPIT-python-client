@@ -22,11 +22,11 @@ class RequestsMixin:
         self._add_hooks('pre_connect', 'post_connect', 'pre_disconnect', 'post_disconnect')
 
 
-    def set_hpit_root_url(root_url):
+    def set_hpit_root_url(self, root_url):
         self._hpit_root_url = root_url
 
 
-    def set_requests_log_level(log_level):
+    def set_requests_log_level(self, log_level):
         requests_log = logging.getLogger("requests")
 
         if log_level == 'warning':
@@ -86,7 +86,7 @@ class RequestsMixin:
 
         Returns: requests.Response : class - The response from HPIT. Normally a 200:OK.
         """
-        url = urljoin(settings.HPIT_URL_ROOT, url)
+        url = urljoin(self._hpit_root_url, url)
 
         failure_count = 0
         while failure_count < 3:
@@ -131,7 +131,7 @@ class RequestsMixin:
 
         Returns: dict() - A Python dictionary representing the JSON recieved in the request.
         """
-        url = urljoin(settings.HPIT_URL_ROOT, url)
+        url = urljoin(self._hpit_root_url, url)
 
         failure_count = 0
         while failure_count < 3:
@@ -175,7 +175,7 @@ class RequestsMixin:
             time.sleep(300)
 
             #Just hit the front page
-            response = self.session.get(settings.HPIT_URL_ROOT)
+            response = self.session.get(self._hpit_root_url)
 
             if response and response.status_code == 200:
                 print("Server looks like it finished rebooting... attempting reconnect.")
