@@ -2,12 +2,9 @@ import sure
 import unittest
 import httpretty
 
-from hpitclient.settings import HpitClientSettings
 from hpitclient.requests_mixin import RequestsMixin
 from hpitclient.exceptions import AuthenticationError, ResourceNotFoundError,InternalServerError
 from unittest.mock import MagicMock
-
-HPIT_URL_ROOT = HpitClientSettings.settings().HPIT_URL_ROOT
 
 class TestRequestsMixin(unittest.TestCase):
 
@@ -21,7 +18,7 @@ class TestRequestsMixin(unittest.TestCase):
             -return value should match self.equal
         """
         
-        httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/connect",
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/connect",
                                 body='OK',
                                 )
         test_requests_mixin = RequestsMixin()
@@ -41,7 +38,7 @@ class TestRequestsMixin(unittest.TestCase):
             -ensure return value matches self.connected
         """
         
-        httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/disconnect",
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/disconnect",
                                 body='OK',
                                 )
         

@@ -3,10 +3,7 @@ import unittest
 import httpretty
 
 from hpitclient import Plugin
-from hpitclient.settings import HpitClientSettings
 from hpitclient.exceptions import PluginPollError, BadCallbackException
-
-HPIT_URL_ROOT = HpitClientSettings.settings().HPIT_URL_ROOT
 
 class TestPlugin(unittest.TestCase):
 
@@ -27,7 +24,7 @@ class TestPlugin(unittest.TestCase):
             -ensure name is argument
             -entity id and api key are strings
         """
-        httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/plugin/subscribe",
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/plugin/subscribe",
                                 body='',
                                 )
         
@@ -43,7 +40,7 @@ class TestPlugin(unittest.TestCase):
             -check if transaction_callback = param
             -make sure callback is callable
         """
-        httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/plugin/subscribe",
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/plugin/subscribe",
                                 body='',
                                 )
        
@@ -61,7 +58,7 @@ class TestPlugin(unittest.TestCase):
         Plugin.clear_transaction_callback() Test plan:
             - make sure self.transaction_callback is None
         """
-        httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/plugin/unsubscribe",
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/plugin/unsubscribe",
                                 body='',
                                 )
         
@@ -82,10 +79,10 @@ class TestPlugin(unittest.TestCase):
             -ensure that 'known' subsriptsion still have their callbacks set
             -ensure that the return value is a dictionary
         """
-        httpretty.register_uri(httpretty.GET,HPIT_URL_ROOT+"/plugin/subscription/list",
+        httpretty.register_uri(httpretty.GET,"https://www.hpit-project.org/plugin/subscription/list",
                                 body='{"subscriptions":["subscription1","subscription2"]}',
                                 )
-        httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/plugin/subscribe",
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/plugin/subscribe",
                                 body='',
                                 )
         
@@ -109,7 +106,7 @@ class TestPlugin(unittest.TestCase):
         Plugin.subscribe() Test plan:
             -ensure that args passed are then in callbacks dict 
         """
-        httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/plugin/subscribe",
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/plugin/subscribe",
                                 body='OK',
                                 )
         
@@ -131,10 +128,10 @@ class TestPlugin(unittest.TestCase):
             -if not in callbacks, make sure keyerror not raised
         """
        
-        httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/plugin/unsubscribe",
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/plugin/unsubscribe",
                                 body='OK',
                                 )
-        httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/plugin/subscribe",
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/plugin/subscribe",
                                 body='',
                                 )
         
@@ -158,10 +155,10 @@ class TestPlugin(unittest.TestCase):
             -ensure we get something from server
         """
         
-        httpretty.register_uri(httpretty.GET,HPIT_URL_ROOT+"/plugin/message/list",
+        httpretty.register_uri(httpretty.GET,"https://www.hpit-project.org/plugin/message/list",
                                 body='{"messages":"4"}',
                                 )
-        httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/plugin/subscribe",
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/plugin/subscribe",
                                 body='',
                                 )
         
@@ -202,7 +199,7 @@ class TestPlugin(unittest.TestCase):
             returnTrue     returnTrue       set                 *             Yes                   true
         """
         
-        httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/plugin/subscribe",
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/plugin/subscribe",
                                 body='',
                                 )
         
@@ -252,10 +249,10 @@ class TestPlugin(unittest.TestCase):
         Plugin.send_response() Test plan:
             -make sure no exception raised
         """
-        httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/response",
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/response",
                                 body='OK',
                                 )
-        httpretty.register_uri(httpretty.POST,HPIT_URL_ROOT+"/plugin/subscribe",
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/plugin/subscribe",
                                 body='',
                                 )
         
