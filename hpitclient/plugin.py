@@ -58,7 +58,7 @@ class Plugin(MessageSenderMixin):
         return self.callbacks
 
 
-    def subscribe(self, **messages):
+    def subscribe(self, messages):
         """
         Subscribe to messages, each argument is exepcted as a key value pair where
         the key is the message's name and the value is the callback function.
