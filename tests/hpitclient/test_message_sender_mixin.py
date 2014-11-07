@@ -2,6 +2,7 @@ import sure
 import httpretty
 import json
 import pytest
+from mock import *
 
 from hpitclient.message_sender_mixin import MessageSenderMixin
 from hpitclient.exceptions import InvalidMessageNameException
@@ -99,6 +100,7 @@ def test_dispatch_responses():
         -Catch not callable error
         -Ensure true returned on completions
      """
+
     bad_response = [{"bad_response": "boo"}]
     bad_response2 = [{"message":{"message_id":"4"}}]
     good_response = [{"message": {"message_id":"4"},"response":"2"}]
@@ -112,6 +114,7 @@ def test_dispatch_responses():
         return True
     
     test_message_sender_mixin = MessageSenderMixin()
+    test_message_sender_mixin.send_log_entry = MagicMock()
     
     test_message_sender_mixin.response_callbacks["4"] = callback1
     setattr(test_message_sender_mixin,"pre_dispatch_responses",returnFalse)
@@ -124,14 +127,23 @@ def test_dispatch_responses():
     
     setattr(test_message_sender_mixin,"pre_dispatch_responses",returnTrue)
     setattr(test_message_sender_mixin,"post_dispatch_responses",returnTrue)
-    
-    test_message_sender_mixin._dispatch_responses.when.called_with(bad_response).should.throw(ResponseDispatchError)
-    test_message_sender_mixin._dispatch_responses.when.called_with(bad_response2).should.throw(ResponseDispatchError)
+   
+    test_message_sender_mixin._dispatch_responses(bad_response)
+    test_message_sender_mixin.send_log_entry.assert_called_once_with('Invalid response from HPIT. No message id supplied in response.')
+
+    test_message_sender_mixin.send_log_entry.reset_mock()
+    test_message_sender_mixin._dispatch_responses(bad_response2)
+    test_message_sender_mixin.send_log_entry.assert_called_once_with('Invalid response from HPIT. No response payload supplied.')
     
     del test_message_sender_mixin.response_callbacks["4"]
-    test_message_sender_mixin._dispatch_responses.when.called_with(good_response).should.throw(ResponseDispatchError)
+    test_message_sender_mixin.send_log_entry.reset_mock()
+    test_message_sender_mixin._dispatch_responses(good_response)
+    test_message_sender_mixin.send_log_entry.assert_called_once_with('No callback registered for message id: 4')
+
     test_message_sender_mixin.response_callbacks["4"] = 5
-    test_message_sender_mixin._dispatch_responses.when.called_with(good_response).should.throw(ResponseDispatchError)
+    test_message_sender_mixin.send_log_entry.reset_mock()
+    test_message_sender_mixin._dispatch_responses(good_response)
+    test_message_sender_mixin.send_log_entry.assert_called_once_with("Callback registered for transcation id: 4 is not a callable.")
     
     test_message_sender_mixin.response_callbacks["4"] = callback1
     test_message_sender_mixin._dispatch_responses(good_response).should.equal(True)

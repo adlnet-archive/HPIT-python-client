@@ -115,7 +115,7 @@ class TestPlugin(unittest.TestCase):
         
         self.test_plugin = Plugin("test_name",None)
         
-        self.test_plugin.subscribe(test_event=test_callback)
+        self.test_plugin.subscribe({'test_event': test_callback})
         self.test_plugin.callbacks["test_event"].should.equal(test_callback)
         
 

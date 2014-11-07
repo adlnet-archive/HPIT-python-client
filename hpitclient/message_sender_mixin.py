@@ -54,7 +54,8 @@ class MessageSenderMixin(RequestsMixin):
         See send() method for more details.
         """
         
-        response = self._post_data('transaction', {
+        response = self._post_data('message', {
+            'name': 'transaction',
             'payload': payload
         }).json()
 
