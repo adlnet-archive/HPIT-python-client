@@ -9,6 +9,13 @@ class AuthenticationError(Exception):
     """
     pass
 
+class AuthorizationError(Exception):
+    """
+    This exception is raised when you've made an authorization grant request
+    when you are not the owner of the message type or resource.
+    """
+    pass
+
 class ResourceNotFoundError(Exception):
     """
     This exception raised on HPIT 403.
@@ -42,6 +49,11 @@ class ResponseDispatchError(Exception):
 class InvalidMessageNameException(Exception):
     """
     This exception is raised when a user attempts to use a system message name, like 'transaction'.
+    """
+
+class InvalidParametersError(Exception):
+    """
+    You haven't met the requirements for this function.
     """
     
 class BadCallbackException(Exception):

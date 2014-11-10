@@ -1,6 +1,7 @@
 from .requests_mixin import RequestsMixin
 from .exceptions import ResponseDispatchError
 from .exceptions import InvalidMessageNameException
+from .exceptions import AuthenticationError, InvalidParametersError, AuthorizationError
 
 class MessageSenderMixin(RequestsMixin):
     def __init__(self):
@@ -134,3 +135,26 @@ class MessageSenderMixin(RequestsMixin):
             return False
 
         return True
+
+        
+    #Plugin or Tutor can be Resource Owner
+    def share_resource(self, resource_token, other_entity_ids):
+        """
+        Sends a blocking request to the HPIT server to share a particular resource with entities
+        other than it's original owner. Only the resource owner can send this request. Once a plugin
+        tells HPIT who the owner of a resource is, only that owner (NOT THE PLUGIN) can make this
+        request.
+
+        Input:
+            resource_token - The resource token, as assigned by HPIT in a secure_resource request.
+            other_entity_ids - Other entities who may view, edit, and work with this resource.
+
+        Returns:
+            True - All went well and now the other entities can view, edit, and work with this resource.
+
+        Throws:
+            AuthenticationError - This entity is not signed into HPIT.
+            InvalidParametersError - The resource_token or other_entity_ids is invalid or empty.
+            AuthorizationError - This entity is not the owner of this resource.
+        """
+        pass

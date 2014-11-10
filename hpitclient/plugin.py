@@ -1,7 +1,9 @@
 import time
 
 from .message_sender_mixin import MessageSenderMixin
+from .authorization_mixin import AuthorizationMixin
 from .exceptions import PluginPollError, BadCallbackException
+from .exceptions import AuthenticationError, InvalidParametersError, AuthorizationError
 
 class Plugin(MessageSenderMixin):
     def __init__(self, entity_id, api_key, wildcard_callback=None):
@@ -76,6 +78,47 @@ class Plugin(MessageSenderMixin):
             if message_name in self.callbacks:
                 self._post_data('plugin/unsubscribe', {'message_name': message_name})
                 del self.callbacks[message_name]
+
+
+    #Plugin Only
+    def share_message(self, message_name, other_entity_ids):
+        """
+        Sends a blocking request to the HPIT server to share your 
+        message type with other plugins. This request is NOT asyncronous.
+
+        Input:
+            message_name - The name of the message to share.
+            other_entity_ids - Other plugins that you are authorizing to listen to
+            this message.
+
+        Returns: 
+            True - Everything went well and the authorization request was granted.
+
+        Throws:
+            AuthenticationError - This entity is not signed into HPIT.
+            InvalidParametersError - The message_name or other_entity_ids is invalid or empty.
+            AuthorizationError - This entity is not the owner of this message.
+        """
+        pass
+
+
+    #Plugin Only
+    def secure_resource(self, owner_id):
+        """
+        Sends a blocking request to the HPIT server to create a new resource authorization
+        token. When you return the resource_id generated in this request to HPIT in future 
+        responses to message queries, HPIT will lock down the response and refuse to send
+        it onto entities that you haven't authorized to view this specific token.
+
+        Input:
+            owner_id - The entity that owns this resource. The plugin here isn't the "owner"
+            of this resource. The entity that sent this request to this plugin is the "owner" 
+            and you are giving them a key to their data.
+
+        Returns:
+            string - The resource authorization token from HPIT.
+        """
+        pass
 
 
     def _poll(self):
