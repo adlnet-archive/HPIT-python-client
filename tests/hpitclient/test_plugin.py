@@ -3,7 +3,7 @@ import unittest
 import httpretty
 
 from hpitclient import Plugin
-from hpitclient.exceptions import PluginPollError, BadCallbackException
+from hpitclient.exceptions import PluginPollError, BadCallbackException, InvalidParametersError
 
 class TestPlugin(unittest.TestCase):
 
@@ -258,3 +258,35 @@ class TestPlugin(unittest.TestCase):
         
         self.test_plugin = Plugin("test_name",None)
         self.test_plugin.send_response(4,{"payload":"4"})
+
+
+    @httpretty.activate
+    def test_share_message(self):
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/share-message",
+            body='OK',
+        )
+
+        self.test_plugin.share_message.when.called_with(None, None).should.throw(InvalidParametersError)
+        self.test_plugin.share_message.when.called_with('', None).should.throw(InvalidParametersError)
+        self.test_plugin.share_message.when.called_with([], None).should.throw(InvalidParametersError)
+        self.test_plugin.share_message.when.called_with({}, None).should.throw(InvalidParametersError)
+        self.test_plugin.share_message.when.called_with('thing', None).should.throw(InvalidParametersError)
+        self.test_plugin.share_message.when.called_with('thing', '').should.throw(InvalidParametersError)
+        self.test_plugin.share_message.when.called_with('thing', []).should.throw(InvalidParametersError)
+        self.test_plugin.share_message('thing', '4').should.equal(True)
+        self.test_plugin.share_message('thing', ['4', '5', '6']).should.equal(True)
+
+
+    @httpretty.activate
+    def test_secure_resource(self):
+        httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/new-resource",
+            body='{"resource_id":"1234"}',
+            content_type="application/json"
+        )
+
+        self.test_plugin.secure_resource.when.called_with(None).should.throw(InvalidParametersError)
+        self.test_plugin.secure_resource.when.called_with('').should.throw(InvalidParametersError)
+        self.test_plugin.secure_resource.when.called_with([]).should.throw(InvalidParametersError)
+        self.test_plugin.secure_resource.when.called_with({}).should.throw(InvalidParametersError)
+        self.test_plugin.secure_resource('4').should.equal('1234')
+

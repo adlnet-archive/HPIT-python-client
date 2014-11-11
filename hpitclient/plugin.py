@@ -1,7 +1,6 @@
 import time
 
 from .message_sender_mixin import MessageSenderMixin
-from .authorization_mixin import AuthorizationMixin
 from .exceptions import PluginPollError, BadCallbackException
 from .exceptions import AuthenticationError, InvalidParametersError, AuthorizationError
 
@@ -99,7 +98,28 @@ class Plugin(MessageSenderMixin):
             InvalidParametersError - The message_name or other_entity_ids is invalid or empty.
             AuthorizationError - This entity is not the owner of this message.
         """
-        pass
+        if not message_name:
+            raise InvalidParametersError('message_name is empty or None')
+
+        if not other_entity_ids:
+            raise InvalidParametersError('other_entity_ids is empty or None')
+
+        if not isinstance(message_name, str):
+            raise InvalidParametersError('message_name must be a string')
+
+        if not isinstance(other_entity_ids, str) and not isinstance(other_entity_ids, list):
+            raise InvalidParametersError('other_entity_ids must be a string or a list')
+
+        response = self._post_data('share-message', {
+            'message_name': message_name,
+            'other_entity_ids': other_entity_ids
+        })
+
+        if 'error' in response and response['error'] == 'not owner':
+            raise AuthorizationError('This entity is not the owner of this message.')
+
+        #Bad responses will cause an exception. We can safely just return true.
+        return True
 
 
     #Plugin Only
@@ -117,8 +137,27 @@ class Plugin(MessageSenderMixin):
 
         Returns:
             string - The resource authorization token from HPIT.
+            False - Failed to secure the resource.
+
+        Throws:
+            AuthenticationError - This entity is not signed into HPIT.
+            InvalidParametersError - The message_name or other_entity_ids is invalid or empty.
+            AuthorizationError - This entity is not the owner of this message.
         """
-        pass
+        if not owner_id:
+            raise InvalidParametersError('owner_id is empty or None')
+
+        if not isinstance(owner_id, str):
+            raise InvalidParametersError('owner_id must be a string')
+
+        response = self._post_data('new-resource', {
+            'owner_id': owner_id
+        })
+
+        if 'resource_id' in response.json():
+            return response.json()['resource_id']
+
+        return False
 
 
     def _poll(self):
@@ -127,6 +166,7 @@ class Plugin(MessageSenderMixin):
         to.
         """
         return self._get_data('plugin/message/list')['messages']
+
 
     def _handle_transactions(self):
         """
