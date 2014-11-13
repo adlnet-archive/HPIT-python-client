@@ -7,6 +7,7 @@ from mock import *
 from hpitclient.message_sender_mixin import MessageSenderMixin
 from hpitclient.exceptions import InvalidMessageNameException
 from hpitclient.exceptions import ResponseDispatchError
+from hpitclient.exceptions import InvalidParametersError
 
 def send_callback():
     print("test callback")
@@ -148,5 +149,42 @@ def test_dispatch_responses():
     test_message_sender_mixin.response_callbacks["4"] = callback1
     test_message_sender_mixin._dispatch_responses(good_response).should.equal(True)
     
-    
+@httpretty.activate 
+def test_get_message_owner():
 
+    subject = MessageSenderMixin()
+    subject.send_log_entry = MagicMock()
+
+    httpretty.register_uri(httpretty.GET,
+        "https://www.hpit-project.org/message-owner/thing",
+        body='{"owner":"4"}',
+        content_type="application/json"
+    )
+
+    subject.get_message_owner.when.called_with(None).should.throw(InvalidParametersError)
+    subject.get_message_owner.when.called_with([]).should.throw(InvalidParametersError)
+    subject.get_message_owner.when.called_with({}).should.throw(InvalidParametersError)
+    subject.get_message_owner.when.called_with("").should.throw(InvalidParametersError)
+    subject.get_message_owner.when.called_with(['thing']).should.throw(InvalidParametersError)
+    subject.get_message_owner.when.called_with({'thing': 1}).should.throw(InvalidParametersError)
+    subject.get_message_owner('thing').should.equal('4')
+
+
+@httpretty.activate
+def test_share_resource():
+    subject = MessageSenderMixin()
+    subject.send_log_entry = MagicMock()
+
+    httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/share-resource",
+        body='OK',
+    )
+
+    subject.share_resource.when.called_with(None, None).should.throw(InvalidParametersError)
+    subject.share_resource.when.called_with('', None).should.throw(InvalidParametersError)
+    subject.share_resource.when.called_with([], None).should.throw(InvalidParametersError)
+    subject.share_resource.when.called_with({}, None).should.throw(InvalidParametersError)
+    subject.share_resource.when.called_with('thing', None).should.throw(InvalidParametersError)
+    subject.share_resource.when.called_with('thing', '').should.throw(InvalidParametersError)
+    subject.share_resource.when.called_with('thing', []).should.throw(InvalidParametersError)
+    subject.share_resource('thing', '4').should.equal(True)
+    subject.share_resource('thing', ['4', '5', '6']).should.equal(True)

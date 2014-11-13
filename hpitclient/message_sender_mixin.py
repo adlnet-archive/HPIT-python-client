@@ -1,6 +1,7 @@
 from .requests_mixin import RequestsMixin
 from .exceptions import ResponseDispatchError
 from .exceptions import InvalidMessageNameException
+from .exceptions import AuthenticationError, InvalidParametersError, AuthorizationError, ResourceNotFoundError
 
 class MessageSenderMixin(RequestsMixin):
     def __init__(self):
@@ -133,4 +134,75 @@ class MessageSenderMixin(RequestsMixin):
         if not self._try_hook('post_dispatch_responses'):
             return False
 
+        return True
+
+    #Plugin or Tutor can query Message Owner
+    def get_message_owner(self, message_name):
+        """
+        Sends a blocking request to the HPIT server to get information about who will recieve
+        a particular message that is sent through the system.
+
+        Returns:
+            entity_id - The owner of the message.
+            None - No one "owns" this message.
+
+        Throws:
+            AuthenticationError - This entity is not signed into HPIT.
+            InvalidParametersError - message_name is empty or None
+        """
+        if not message_name:
+            raise InvalidParametersError('message_name is empty or None')
+
+        if not isinstance(message_name, str):
+            raise InvalidParametersError('message_name must be a string')
+
+        try:
+            response = self._get_data('/'.join(['message-owner', message_name]))
+        except ResourceNotFoundError:
+            return None
+
+        return response['owner']
+
+        
+    #Plugin or Tutor can be Resource Owner
+    def share_resource(self, resource_token, other_entity_ids):
+        """
+        Sends a blocking request to the HPIT server to share a particular resource with entities
+        other than it's original owner. Only the resource owner can send this request. Once a plugin
+        tells HPIT who the owner of a resource is, only that owner (NOT THE PLUGIN) can make this
+        request.
+
+        Input:
+            resource_token - The resource token, as assigned by HPIT in a secure_resource request.
+            other_entity_ids - Other entities who may view, edit, and work with this resource.
+
+        Returns:
+            True - All went well and now the other entities can view, edit, and work with this resource.
+
+        Throws:
+            AuthenticationError - This entity is not signed into HPIT.
+            InvalidParametersError - The resource_token or other_entity_ids is invalid or empty.
+            AuthorizationError - This entity is not the owner of this resource.
+        """
+        if not resource_token:
+            raise InvalidParametersError('resource_token is empty or None')
+
+        if not other_entity_ids:
+            raise InvalidParametersError('other_entity_ids is empty or None')
+
+        if not isinstance(resource_token, str):
+            raise InvalidParametersError('message_name must be a string')
+
+        if not isinstance(other_entity_ids, str) and not isinstance(other_entity_ids, list):
+            raise InvalidParametersError('other_entity_ids must be a string or a list')
+
+        response = self._post_data('share-message', {
+            'resource_id': resource_token,
+            'other_entity_ids': other_entity_ids
+        })
+
+        if 'error' in response and response['error'] == 'not owner':
+            raise AuthorizationError('This entity is not the owner of this message.')
+
+        #Bad responses will cause an exception. We can safely just return true.
         return True
