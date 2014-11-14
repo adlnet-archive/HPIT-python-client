@@ -2,6 +2,7 @@ import time
 
 from .message_sender_mixin import MessageSenderMixin
 from .exceptions import PluginPollError, BadCallbackException
+from .exceptions import AuthenticationError, InvalidParametersError, AuthorizationError
 
 class Plugin(MessageSenderMixin):
     def __init__(self, entity_id, api_key, wildcard_callback=None):
@@ -78,12 +79,94 @@ class Plugin(MessageSenderMixin):
                 del self.callbacks[message_name]
 
 
+    #Plugin Only
+    def share_message(self, message_name, other_entity_ids):
+        """
+        Sends a blocking request to the HPIT server to share your 
+        message type with other plugins. This request is NOT asyncronous.
+
+        Input:
+            message_name - The name of the message to share.
+            other_entity_ids - Other plugins that you are authorizing to listen to
+            this message.
+
+        Returns: 
+            True - Everything went well and the authorization request was granted.
+
+        Throws:
+            AuthenticationError - This entity is not signed into HPIT.
+            InvalidParametersError - The message_name or other_entity_ids is invalid or empty.
+            AuthorizationError - This entity is not the owner of this message.
+        """
+        if not message_name:
+            raise InvalidParametersError('message_name is empty or None')
+
+        if not other_entity_ids:
+            raise InvalidParametersError('other_entity_ids is empty or None')
+
+        if not isinstance(message_name, str):
+            raise InvalidParametersError('message_name must be a string')
+
+        if not isinstance(other_entity_ids, str) and not isinstance(other_entity_ids, list):
+            raise InvalidParametersError('other_entity_ids must be a string or a list')
+
+        response = self._post_data('share-message', {
+            'message_name': message_name,
+            'other_entity_ids': other_entity_ids
+        })
+
+        if 'error' in response and response['error'] == 'not owner':
+            raise AuthorizationError('This entity is not the owner of this message.')
+
+        #Bad responses will cause an exception. We can safely just return true.
+        return True
+
+
+    #Plugin Only
+    def secure_resource(self, owner_id):
+        """
+        Sends a blocking request to the HPIT server to create a new resource authorization
+        token. When you return the resource_id generated in this request to HPIT in future 
+        responses to message queries, HPIT will lock down the response and refuse to send
+        it onto entities that you haven't authorized to view this specific token.
+
+        Input:
+            owner_id - The entity that owns this resource. The plugin here isn't the "owner"
+            of this resource. The entity that sent this request to this plugin is the "owner" 
+            and you are giving them a key to their data.
+
+        Returns:
+            string - The resource authorization token from HPIT.
+            False - Failed to secure the resource.
+
+        Throws:
+            AuthenticationError - This entity is not signed into HPIT.
+            InvalidParametersError - The message_name or other_entity_ids is invalid or empty.
+            AuthorizationError - This entity is not the owner of this message.
+        """
+        if not owner_id:
+            raise InvalidParametersError('owner_id is empty or None')
+
+        if not isinstance(owner_id, str):
+            raise InvalidParametersError('owner_id must be a string')
+
+        response = self._post_data('new-resource', {
+            'owner_id': owner_id
+        })
+
+        if 'resource_id' in response.json():
+            return response.json()['resource_id']
+
+        return False
+
+
     def _poll(self):
         """
         Get a list of new messages from the server for messages we are listening 
         to.
         """
         return self._get_data('plugin/message/list')['messages']
+
 
     def _handle_transactions(self):
         """

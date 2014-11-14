@@ -2,10 +2,12 @@ import sure
 import httpretty
 import json
 import pytest
+from mock import *
 
 from hpitclient.message_sender_mixin import MessageSenderMixin
 from hpitclient.exceptions import InvalidMessageNameException
 from hpitclient.exceptions import ResponseDispatchError
+from hpitclient.exceptions import InvalidParametersError
 
 def send_callback():
     print("test callback")
@@ -99,6 +101,7 @@ def test_dispatch_responses():
         -Catch not callable error
         -Ensure true returned on completions
      """
+
     bad_response = [{"bad_response": "boo"}]
     bad_response2 = [{"message":{"message_id":"4"}}]
     good_response = [{"message": {"message_id":"4"},"response":"2"}]
@@ -112,6 +115,7 @@ def test_dispatch_responses():
         return True
     
     test_message_sender_mixin = MessageSenderMixin()
+    test_message_sender_mixin.send_log_entry = MagicMock()
     
     test_message_sender_mixin.response_callbacks["4"] = callback1
     setattr(test_message_sender_mixin,"pre_dispatch_responses",returnFalse)
@@ -124,17 +128,63 @@ def test_dispatch_responses():
     
     setattr(test_message_sender_mixin,"pre_dispatch_responses",returnTrue)
     setattr(test_message_sender_mixin,"post_dispatch_responses",returnTrue)
-    
-    test_message_sender_mixin._dispatch_responses.when.called_with(bad_response).should.throw(ResponseDispatchError)
-    test_message_sender_mixin._dispatch_responses.when.called_with(bad_response2).should.throw(ResponseDispatchError)
+   
+    test_message_sender_mixin._dispatch_responses(bad_response)
+    test_message_sender_mixin.send_log_entry.assert_called_once_with('Invalid response from HPIT. No message id supplied in response.')
+
+    test_message_sender_mixin.send_log_entry.reset_mock()
+    test_message_sender_mixin._dispatch_responses(bad_response2)
+    test_message_sender_mixin.send_log_entry.assert_called_once_with('Invalid response from HPIT. No response payload supplied.')
     
     del test_message_sender_mixin.response_callbacks["4"]
-    test_message_sender_mixin._dispatch_responses.when.called_with(good_response).should.throw(ResponseDispatchError)
+    test_message_sender_mixin.send_log_entry.reset_mock()
+    test_message_sender_mixin._dispatch_responses(good_response)
+    test_message_sender_mixin.send_log_entry.assert_called_once_with('No callback registered for message id: 4')
+
     test_message_sender_mixin.response_callbacks["4"] = 5
-    test_message_sender_mixin._dispatch_responses.when.called_with(good_response).should.throw(ResponseDispatchError)
+    test_message_sender_mixin.send_log_entry.reset_mock()
+    test_message_sender_mixin._dispatch_responses(good_response)
+    test_message_sender_mixin.send_log_entry.assert_called_once_with("Callback registered for transcation id: 4 is not a callable.")
     
     test_message_sender_mixin.response_callbacks["4"] = callback1
     test_message_sender_mixin._dispatch_responses(good_response).should.equal(True)
     
-    
+@httpretty.activate 
+def test_get_message_owner():
 
+    subject = MessageSenderMixin()
+    subject.send_log_entry = MagicMock()
+
+    httpretty.register_uri(httpretty.GET,
+        "https://www.hpit-project.org/message-owner/thing",
+        body='{"owner":"4"}',
+        content_type="application/json"
+    )
+
+    subject.get_message_owner.when.called_with(None).should.throw(InvalidParametersError)
+    subject.get_message_owner.when.called_with([]).should.throw(InvalidParametersError)
+    subject.get_message_owner.when.called_with({}).should.throw(InvalidParametersError)
+    subject.get_message_owner.when.called_with("").should.throw(InvalidParametersError)
+    subject.get_message_owner.when.called_with(['thing']).should.throw(InvalidParametersError)
+    subject.get_message_owner.when.called_with({'thing': 1}).should.throw(InvalidParametersError)
+    subject.get_message_owner('thing').should.equal('4')
+
+
+@httpretty.activate
+def test_share_resource():
+    subject = MessageSenderMixin()
+    subject.send_log_entry = MagicMock()
+
+    httpretty.register_uri(httpretty.POST,"https://www.hpit-project.org/share-resource",
+        body='OK',
+    )
+
+    subject.share_resource.when.called_with(None, None).should.throw(InvalidParametersError)
+    subject.share_resource.when.called_with('', None).should.throw(InvalidParametersError)
+    subject.share_resource.when.called_with([], None).should.throw(InvalidParametersError)
+    subject.share_resource.when.called_with({}, None).should.throw(InvalidParametersError)
+    subject.share_resource.when.called_with('thing', None).should.throw(InvalidParametersError)
+    subject.share_resource.when.called_with('thing', '').should.throw(InvalidParametersError)
+    subject.share_resource.when.called_with('thing', []).should.throw(InvalidParametersError)
+    subject.share_resource('thing', '4').should.equal(True)
+    subject.share_resource('thing', ['4', '5', '6']).should.equal(True)
