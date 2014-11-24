@@ -4,6 +4,8 @@ from .message_sender_mixin import MessageSenderMixin
 from .exceptions import PluginPollError, BadCallbackException
 from .exceptions import AuthenticationError, InvalidParametersError, AuthorizationError
 
+import json
+
 class Plugin(MessageSenderMixin):
     def __init__(self, entity_id, api_key, wildcard_callback=None):
         super().__init__()
@@ -293,3 +295,27 @@ class Plugin(MessageSenderMixin):
             'message_id': message_id,
             'payload': payload
         })
+        
+    def get_shared_messages(self,args):
+        shared_messages = None
+        if args: 
+            self.args = json.loads(args[1:-1])
+            try:
+                shared_messages = self.args["shared_messages"]
+            except (KeyError, TypeError):
+                shared_messages = None
+        else:
+            shared_messages = None
+        
+        if isinstance(shared_messages,dict):
+            for k,v in shared_messages.items():
+                if not isinstance(v,str) and not isinstance(v,list):
+                    shared_messages = None
+                    break
+                if not isinstance(k,str):
+                    shared_messages = None
+                    break
+        else:
+            shared_messages = None
+        
+        return shared_messages
