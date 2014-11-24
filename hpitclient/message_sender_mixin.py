@@ -196,7 +196,7 @@ class MessageSenderMixin(RequestsMixin):
         if not isinstance(other_entity_ids, str) and not isinstance(other_entity_ids, list):
             raise InvalidParametersError('other_entity_ids must be a string or a list')
 
-        response = self._post_data('share-message', {
+        response = self._post_data('share-resource', {
             'resource_id': resource_token,
             'other_entity_ids': other_entity_ids
         })
