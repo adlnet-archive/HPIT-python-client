@@ -5,6 +5,9 @@ import httpretty
 from hpitclient import Plugin
 from hpitclient.exceptions import PluginPollError, BadCallbackException, InvalidParametersError
 
+import json
+import shlex
+
 class TestPlugin(unittest.TestCase):
 
     def setUp(self):
@@ -290,3 +293,44 @@ class TestPlugin(unittest.TestCase):
         self.test_plugin.secure_resource.when.called_with({}).should.throw(InvalidParametersError)
         self.test_plugin.secure_resource('4').should.equal('1234')
 
+    def test_get_shared_messages(self):
+        self.test_plugin.get_shared_messages(None).should.equal(None)
+        json_string = json.dumps({
+                "shared_messages": {
+                    "message_name": ["id1","id2","id3"],
+                    "message_name2":"id4",
+                }
+            })
+        json_string = shlex.quote(json_string)
+        
+        self.test_plugin.get_shared_messages(json_string).should.equal({
+                "message_name": ["id1","id2","id3"],
+                "message_name2":"id4",
+            })
+        
+        json_string = json.dumps({
+                "shared_messages": {
+                    "message_name": 4,
+                    "message_name2":"id4",
+                }
+            })
+        json_string = shlex.quote(json_string)
+        self.test_plugin.get_shared_messages(None).should.equal(None)
+        
+        json_string = json.dumps({
+                "wrong key": {
+                    "message_name": 4,
+                    "message_name2":"id4",
+                }
+            })
+        json_string = shlex.quote(json_string)
+        self.test_plugin.get_shared_messages(None).should.equal(None)
+        
+        json_string = json.dumps({
+                "wrong key": {
+                    "5": "id2",
+                    "message_name2":"id4",
+                }
+            })
+        json_string = shlex.quote(json_string)
+        self.test_plugin.get_shared_messages(None).should.equal(None)
