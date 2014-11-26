@@ -7,6 +7,7 @@ from hpitclient.exceptions import PluginPollError, BadCallbackException, Invalid
 
 import json
 import shlex
+from unittest.mock import MagicMock
 
 class TestPlugin(unittest.TestCase):
 
@@ -172,10 +173,19 @@ class TestPlugin(unittest.TestCase):
     def test_handle_transactions(self):
         """
         Plugin._handle_transactions() Test plan:
-            -
+            - 
         """
-        pass
-
+        event_param = {"transactions": [
+                    {"message_id": '1234', "sender_entity_id": '4567', "message_name":"test_event","message":{"thing": "test message"}},
+                    {"message_id": '1234', "sender_entity_id": '4567', "message_name":"test_event","message":{"thing": "test message"}},
+        ]}
+        self.test_plugin._get_data=MagicMock(return_value=event_param)
+        
+        self.test_plugin.transaction_callback= MagicMock()
+        
+        self.test_plugin._handle_transactions().should.equal(True)
+        self.test_plugin.transaction_callback.assert_called_with(event_param["transactions"][0]["message"])
+        self.test_plugin.transaction_callback.call_count.should.equal(2)
 
     wildCardCalled = False
     @httpretty.activate
