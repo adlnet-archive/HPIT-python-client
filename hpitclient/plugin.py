@@ -178,9 +178,14 @@ class Plugin(MessageSenderMixin):
         transaction_data = self._get_data('plugin/transaction/list')['transactions']
 
         for item in transaction_data:
+            payload = item["message"]
+            
+            #Inject the message_id into the payload
+            payload['message_id'] = item['message_id']
+            payload['sender_entity_id'] = item['sender_entity_id']
+            
             if self.transaction_callback:
-                if not self.transaction_callback(item):
-                    return False
+                self.transaction_callback(payload)
 
         return True
 
