@@ -177,9 +177,11 @@ class TestPlugin(unittest.TestCase):
         Plugin._handle_transactions() Test plan:
             - 
         """
+        
+        time = datetime.now()
         event_param = {"transactions": [
-                    {"message_id": '1234', "sender_entity_id": '4567', "message_name":"test_event","time_created":datetime.now(),"message":{"thing": "test message"}},
-                    {"message_id": '1234', "sender_entity_id": '4567', "message_name":"test_event","time_created":datetime.now(),"message":{"thing": "test message"}},
+                    {"message_id": '1234', "sender_entity_id": '4567', "message_name":"test_event","time_created":time,"message":{"thing": "test message"}},
+                    {"message_id": '1234', "sender_entity_id": '4567', "message_name":"test_event","time_created":time,"message":{"thing": "test message"}},
         ]}
         self.test_plugin._get_data=MagicMock(return_value=event_param)
         
@@ -226,10 +228,10 @@ class TestPlugin(unittest.TestCase):
             pass
         def wildCard(param):
             global wildCardCalled
-            wildCardCalled = True      
-        event_param = [{"message_id": '1234', "sender_entity_id": '4567', "message_name":"test_event","time_created":datetime.now(),"message":{"thing": "test message"}}]
-        
-        
+            wildCardCalled = True
+            
+        time=datetime.now()
+        event_param = [{"message_id": '1234', "sender_entity_id": '4567', "message_name":"test_event","time_created":time,"message":{"thing": "test message"}}]
         
         setattr(self.test_plugin,"pre_dispatch_messages",returnFalse)
         self.test_plugin._dispatch(event_param).should.equal(False)
