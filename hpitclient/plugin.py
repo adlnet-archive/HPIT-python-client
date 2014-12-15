@@ -183,6 +183,7 @@ class Plugin(MessageSenderMixin):
             #Inject the message_id into the payload
             payload['message_id'] = item['message_id']
             payload['sender_entity_id'] = item['sender_entity_id']
+            payload['time_created'] = item['time_created']
             
             if self.transaction_callback:
                 self.transaction_callback(payload)
@@ -204,6 +205,7 @@ class Plugin(MessageSenderMixin):
             #Inject the message_id into the payload
             payload['message_id'] = message_item['message_id']
             payload['sender_entity_id'] = message_item['sender_entity_id']
+            payload['time_created'] = message_item['time_created']
 
             try:
                 self.callbacks[message](payload)
