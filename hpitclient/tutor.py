@@ -38,13 +38,7 @@ class Tutor(MessageSenderMixin):
 
                 self.time_last_poll = cur_time
 
-                if not self._try_hook('pre_poll_responses'):
-                    break;
-
                 responses = self._poll_responses()
-
-                if not self._try_hook('post_poll_responses'):
-                    break;
 
                 if not self._dispatch_responses(responses):
                     break;
