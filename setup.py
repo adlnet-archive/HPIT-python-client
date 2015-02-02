@@ -1,7 +1,7 @@
-from distutils.core import setup
+from setuptools import setup
 
 requirements = [
-    'requests (>=2.2.1)',
+    'requests>=2.2.1',
 ]
 
 classifiers=[
@@ -39,5 +39,5 @@ setup(name='hpitclient',
     license='MIT LICENSE',
     packages=['hpitclient'],
     classifiers=classifiers,
-    requires=requirements,
+    install_requires=requirements,
 )
