@@ -404,6 +404,6 @@ subscribes a tutor to transaction messages.
 ## Active Plugins in Production
 
 Currently, there are several active plugins on HPIT's production servers which you can query for information.
-These include:  knowledge tracing plugin; hint factory plugin; boredom detector plugin; student manager plugin. The knowledge tracing plugin is responsible for handling bayesian knowledge tracing,  the hint factory handle domain model generation and hint generation, the 
+These include:  knowledge tracing plugin; hint factory plugin; boredom detector plugin; student manager plugin. The knowledge tracing plugin is responsible for handling bayesian knowledge tracing,  the hint factory handle domain model generation and hint generation, the boredom detctor plugin provides either a boredom indicator (true/false) or boredom percentage indicator, and the student manager plugin allows for setting and retrieving any standard or custom student attributes.
 
 Documentation on these  plugins are available from https://www.hpit-project.org/docs
