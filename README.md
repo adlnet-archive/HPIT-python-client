@@ -403,7 +403,7 @@ subscribes a tutor to transaction messages.
 
 ## Active Plugins in Production
 
-Currently, there are only 2 plugins active on HPIT's production servers which you can query for information.
-These are the knowledge tracing plugin and the hint factory plugin. The knowledge tracing plugin is responsible
-for handling bayesian knowledge tracing, and the hint factory handle domain model generation and hint generation.
-Documentation on these two plugins are available from https://www.hpit-project.org/docs
+Currently, there are only 3 plugins active on HPIT's production servers which you can query for information.
+These are:knowledge tracing plugin; hint factory plugin; boredom detector plugin. The knowledge tracing plugin is responsible for handling bayesian knowledge tracing, and the hint factory handle domain model generation and hint generation.
+
+Documentation on these  plugins are available from https://www.hpit-project.org/docs
