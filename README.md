@@ -407,3 +407,5 @@ The knowledge tracing plugin is responsible for handling Bayesian knowledge trac
 domain model generation and hint generation, the boredom detector plugin provides either a boredom indicator 
 (true/false) or boredom percentage indicator, and the student manager plugin allows for setting and retrieving 
 any standard or custom student attributes.
+
+Documentation on these  plugins are available from https://www.hpit-project.org/docs
