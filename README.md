@@ -3,12 +3,13 @@
 ## What is HPIT?
 
 HPIT is a collection of machine learning and data management plugins for Intelligent Tutoring Systems. It
-is being developed between a partnership with Carnegie Learning and TutorGen, Inc and is based on the most 
-recent research available. The goal of HPIT is to provide a scalable platform for the future development 
-of cognitive and intelligent tutoring systems. HPIT by default consists of several different plugins
-which users can store, track and query for information. As of today we support Bayesian Knowledge Tracing, 
-Model Tracing, Adaptive Hint Generation, and data storage and retrieval. HPIT is in active development 
-and should be considered unstable for everyday use.
+is being developed through a partnership with Carnegie Learning and TutorGen, Inc and is based on the most 
+recent research available.The goal of HPIT is to provide a scalable platform for the future development of 
+intelligent tutoring systems, and an architecture that can accommodate both cognitive and non-cognitive 
+factors in student modeling. HPIT by default consists of several different plugins which users can store, 
+track, and query for information. As of today we support Bayesian Knowledge Tracing, Model Tracing, 
+Adaptive Hint Generation, and data storage and retrieval. HPIT is in active development and should be 
+considered unstable for everyday use.
 
 ## Installing the client libraries
 
@@ -21,8 +22,6 @@ and should be considered unstable for everyday use.
 4. Install the HPIT client libraries:
     1. First, clone the repository at https://github.com/tutorgen/HPIT-python-client.git.
     2. Run 'python setup.py install'
-
-You're all set to start using the libraries.
 
 ## Running the test suite.
 
@@ -58,9 +57,9 @@ URL if you are doing any local testing.
 
 To create a new plugin, first go https://www.hpit-project.org and log in. Then
 click on "My Plugins" and add a new plugin. Give it a brief name and a description. Click
-Submit. The next page will generate for you two items you'll need to us to connect to the
-centralized HPIT router. An Entity ID and an API Key. We do not store API Keys on the server
-so if you lose it you'll need to generate a new one. Copy the Entity ID and API Key.
+Submit. The next page will generate two items you will need to connect to the
+centralized HPIT router.  Copy and securly store the Entity ID and API Key An Entity ID and an API Key. 
+We do not store API Keys on the server so if you lose it you will need to generate a new one. 
 
 To create a new plugin you'll need to derive from the Plugin class.
 
@@ -86,9 +85,10 @@ my_plugin.start()
 ```
 
 Plugins are event driven. The start method connects to the server then starts an endless loop. There are
-several hooks that can get called in this process. One of these hooks is the `post_connect` hook and will
-get called after successfully connecting to the server. Here is where you can register the messages you want
-your plugin to listen to and the callback functions to call when your plugin recieves a message of that type.
+several hooks that can be called in this process. One of these hooks is the `post_connect` hook and id
+called after successfully connecting to the server. This is where you can register the messages you want 
+your plugin to listen for, and the callback functions it should employ when your plugin receives a message 
+of that type.
 
 Let's define one now:
 
@@ -110,19 +110,20 @@ class MyPlugin(Plugin):
         print(message['echo_text'])
 ```
 
-The `self.subscribe` method takes a message name and a callable. In this case `echo` is the message name and
-`self.my_echo_callback` is the callback that will be called when a message of that name is sent to the plugin. It 
+The `self.subscribe` method takes a message name and a callback. In this case `echo` is the message name and
+`self.my_echo_callback` is the callback that will be used when a message named 'echo' is sent to the plugin. It 
 then contacts the HPIT central router and tells it to start storing messages with that name of `echo` so this plugin
 can listen to and respond to those messages.
 
-A message in HPIT consists of a message name, in this case `echo` and a payload. The payload can
-have any arbitrary data in it that a tutor wishes to send. HPIT doesn't care about the kind of data
-it sends to plugins. It's the plugin operator's responsibility to do what it wants with the data
-that comes from the tutor.
+A message in HPIT consists of a message name, in this case `echo`, and a payload. The payload can
+have any arbitrary data in it that a tutor wishes to send. The payload is determined by the Tutor, and the
+HPIT router doesn't care what data is in the payload.  It is up to the plugin to parse and validate the payload. 
+Plugin developers should document what messages their plugins receive and what data types and values the payload
+should contain.
 
-So now if a tutor sends a message like `"echo" -> {'echo_text' : "Hello World!"}` through HPIT this plugin
-will recieve that message and print it to the screen. If 'echo_text' isn't in the payload the callback would
-throw a KeyError exception so we might want to handle that.
+If a tutor sends a message like `"echo" -> {'echo_text' : "Hello World!"}` through HPIT, this plugin
+will receive that message and print it to the screen. If 'echo_text' isn't in the payload the callback would
+throw a KeyError exception, which in practice, should be handled.
 
 ```python
 
@@ -142,7 +143,7 @@ class MyPlugin(Plugin):
 ```
 
 In the inner loop of the start method a few things happen. The plugin asks the HPIT router server if any messages
-that it wants to listen to are queued to be sent to the plugin. Then if it recieves new messages it dispatches them
+that it wants to listen to are queued to be sent to the plugin. Then if it receives new messages it dispatches them
 to the assigned callbacks that were specified in your calls to `self.subscribe`
 
 Plugins can also send responses back to the original sender of messages. To do so the plugin needs to call the
@@ -173,16 +174,16 @@ class MyPlugin(Plugin):
             self.send_response(message['message_id'], my_response)
 ```
 
-Now the original tutor or plugin who sent this message to your MyPlugin will get a response back
+The original tutor or plugin who sent this message to MyPlugin will get a response back
 with the `echo_response` parameter sent back.
 
-Just like tutors, plugins can also send messages to other messages over HPIT. It is possible to
+Just like tutors, plugins can also send messages to other plugins through HPIT. It is possible to
 "daisy chain" plugins together this way where you have a tutor send a message, which gets sent 
 to a plugin (A), which queries another plugin for information (B), which does the same for another plugin (C), 
 which sends back a response to plugin B, which responds to plugin A, which responds to the original Tutor.
 
 The goal with this is that each plugin can handle a very small task, like storing information, do some logging,
-update a decision tree, or a knowledge graph, or etc, etc. The possibilities are endless.
+update a decision tree, update a knowledge graph, or etc, etc. The possibilities are endless.
 
 Our plugin all put together now looks like:
 
@@ -230,13 +231,13 @@ that the plugin to listen and possibly respond to.
 To stop the plugin from running you can either send a SIGTERM or SIGKILL signal to it eg. (`sudo kill -9 plugin_process_id`), OR
 you can press CTRL+C, OR you can return False from a hook. A signal, control+c, and returning False from a hook are considered
 graceful by the library and not only will the plugin terminate, it will send a disconnect message to the server, which will
-destory the authentication session against the server, and the HPIT server will continue storing messages for you to retrieve
+destroy the authentication session with the server, and the HPIT server will continue storing messages for you to retrieve
 later.
 
-Disconnecting from the HPIT server will not cause HPIT to forget about you, it will continue storing messages for you, which
-you can recieve the next time you run your plugin. Isn't that nice. :)
+Disconnecting from the HPIT server will not cause HPIT to forget about you; it will continue storing messages for you which
+you can receive the next time you run your plugin.
 
-If you want HPIT to stop storing and routing messages to you, you can call the handy, dandy 'self.unsubscribe' method after
+If you want HPIT to stop storing and routing messages to you, you can call the 'self.unsubscribe' method after
 connecting to HPIT. A good place to do this is in the `pre_disconnect` hook.
 
 ```python
@@ -286,8 +287,8 @@ post_dispatch_responses     | After the plugin dispatches it's responses to resp
 To create a new tutor, first go https://www.hpit-project.org and log in. Then
 click on "My Tutors" and add a new tutor. Give it a brief name and a description. Click
 Submit. The next page will generate for you two items you'll need to us to connect to the
-centralized HPIT router. An Entity ID and an API Key. We do not store API Keys on the server
-so if you lose it you'll need to generate a new one. Copy the Entity ID and API Key.
+centralized HPIT router. Copy the Entity ID and API Key in a local, secure place. We do not store API Keys on the server,
+so if you lose it, you'll need to generate a new one. 
 
 To create a new tutor you'll need to derive from the Tutor class.
 
@@ -315,7 +316,7 @@ polls HPIT for responses from plugins which you have sent messages to earlier.
 To send a message to HPIT and have that message routed to a specific plugin you can call the `self.send`
 method as we do above. Messages sent this way consist of an event name (in this case 'echo') and a dictionary
 of data. Optionally you can specify a response callback as we do below. All messages sent through HPIT are 
-multicast and every plugin which 'subscribes' to those messages will recieve them, including the echo plugin
+multicast and every plugin which 'subscribes' to those messages will receive them, including the echo plugin
 you created and registered with HPIT in the last tutorial.
 
 ```python
@@ -330,7 +331,7 @@ class MyTutor(Tutor):
 ```
 
 When you send a message to HPIT you can specify a response callback to the send method. After the message is
-recieved and processed by a plugin, it may optionally send a response back. If it does the response will travel
+received and processed by a plugin, it may optionally send a response back. If it does the response will travel
 back through HPIT, where when polled by this library, will route that response to the callback you specified. You can
 then process the response however you would like in your Tutor. Here, we are just echoing the response back to the
 console. Responses you recive will be a dictionary consisting of the following key-value pairs.
@@ -340,16 +341,16 @@ Key (. denotes sub-dictionary)  | Value
 message_id                      | The ID generated to track the message.
 message.sender_entity_id        | Your Entity ID.
 message.receiver_entity_id      | The Plugin's Entity ID that is responding to your message.
-message.time_created            | The time HPIT first recieved your message.
+message.time_created            | The time HPIT first received your message.
 message.time_received           | The time HPIT queued the message for the plugin to consume.
-message.time_responded          | The time HPIT recieved a response from the plugin.
+message.time_responded          | The time HPIT received a response from the plugin.
 message.time_response_received  | The time HPIT sent the response back to your tutor.
 message.payload                 | What you originally sent to HPIT.
 message.message_name            | What you named the message.
 response                        | A dictionary of values the Plugin responded to the message with.
 
-Since multiply plugins may respond to the same message that you sent out, you may wish to check the contents
-of the response payload, as well as the message.reciever_entity_id to help filter the responses you actually
+Since multiple plugins may respond to the same message that you sent out, you may wish to check the contents
+of the response payload, as well as the message.receiver_entity_id to help filter the responses you actually
 want to handle. You can specify different callbacks for the same message, as well as a "global" callback for 
 one message. For example both:
 
@@ -384,14 +385,11 @@ class mytutor(tutor):
 
 are valid ways to handle responses from plugins. 
 
-That's really all their is to writing a tutor.
-
-
 ## A Note about Transactions
 
 In HPIT, a transaction is supposed to be the smallest unit of interaction a student has with a tutor.  The
 PSLC datashop uses transactions in its analysis of learning; it is the most fine grained representation of a
-student's skill set.  Transactions can be generated by the student, like a key being press or an answer selected, 
+student's skill set.  Transactions can be generated by the student, like a key being pressed or an answer selected, 
 or by the tutor, as in the tutor tells HPIT that the student was correct in answering a question.
 
 For a Tutor, to utilize transactions, developers should make use of the send_transaction() method, which functions
@@ -403,7 +401,9 @@ subscribes a tutor to transaction messages.
 
 ## Active Plugins in Production
 
-Currently, there are only 2 plugins active on HPIT's production servers which you can query for information.
-These are the knowledge tracing plugin and the hint factory plugin. The knowledge tracing plugin is responsible
-for handling bayesian knowledge tracing, and the hint factory handle domain model generation and hint generation.
-Documentation on these two plugins are available from https://www.hpit-project.org/docs
+Currently, there are several active plugins on HPIT's production servers which you can query for information. 
+These include: knowledge tracing plugin; hint factory plugin; boredom detector plugin; student manager plugin. 
+The knowledge tracing plugin is responsible for handling Bayesian knowledge tracing, the hint factory handles 
+domain model generation and hint generation, the boredom detector plugin provides either a boredom indicator 
+(true/false) or boredom percentage indicator, and the student manager plugin allows for setting and retrieving 
+any standard or custom student attributes.
